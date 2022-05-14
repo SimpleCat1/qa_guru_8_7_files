@@ -2,12 +2,14 @@ package com.simbirsoft.tests;
 
 import com.codeborne.pdftest.PDF;
 import com.codeborne.xlstest.XLS;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +50,22 @@ public class FilesTests {
             //try нужен, чтобы файл закрыли, когда всю работу с ним сделаем в блоке try(java закроет )
             XLS parsed = new XLS(stream);
             assertThat(parsed.excel.getSheetAt(0).getRow(x).getCell(y).getNumericCellValue()).isEqualTo(textInArea);
+        }
+    }
+
+    private static Stream<Arguments> testsData2() {
+        return Stream.of(
+                arguments("Jkl", 0),
+                arguments("Приветддд", 1),
+                arguments(" стол", 2)
+        );
+    }
+    @ParameterizedTest(name = "{index} - {0} is a palindrome")
+    @MethodSource("testsData2")
+    void  readFileDOCX_TextIsRight(String text, int position) throws Exception {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream("files/DOCX.docx")) {
+            WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(stream);
+            assertThat(wordMLPackage.getMainDocumentPart().getContent().get(position).toString()).contains(text);
         }
     }
 }
